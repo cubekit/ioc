@@ -1,5 +1,5 @@
-import IoCContainer from 'IoC/'
-import { mustBeInstantiable } from 'TestUtils/'
+import IoCContainer from 'ioc/'
+import { mustBeInstantiable } from 'test-utils/'
 
 
 describe('IoCContainer', () => {
