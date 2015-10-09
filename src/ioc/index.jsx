@@ -11,14 +11,14 @@ export default class IoCContainer {
         this._singletons = this._singletons.set(type, true)
     }
 
-    make(type) {
+    make(type, ...args) {
         this.registerAsSingletonIfFlagged(type)
 
         if (this._isSingleton(type)) {
             return this._getSingleton(type)
         }
 
-        return this._instantiate(type)
+        return this._instantiate(type, args)
     }
 
     registerAsSingletonIfFlagged(type) {
@@ -42,14 +42,17 @@ export default class IoCContainer {
         return this._instances.get(type)
     }
 
-    _instantiate(type) {
-        const deps = this.makeDeps(type)
+    _instantiate(type, args = []) {
+        const deps = this.makeDeps(type, args)
         return new type(...deps)
     }
 
-    makeDeps(type) {
-        const types = this.getConstructorTypes(type)
-        return _.map(types, type => this.make(type))
+    makeDeps(type, args) {
+        const types = this.getConstructorTypes(type, args)
+        const count = Math.max(types.length, args.length)
+        return _.times(count, (index) => {
+            return args[index] || this.make(types[index])
+        })
     }
 
     getConstructorTypes(type) {
