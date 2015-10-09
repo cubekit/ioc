@@ -2,7 +2,7 @@ import IoCContainer from 'ioc/'
 import { mustBeInstantiable } from 'test-utils/'
 
 
-describe('IoCContainer', () => {
+describe('IoCContainer', function() {
 
     mustBeInstantiable(IoCContainer)
 
@@ -19,28 +19,28 @@ describe('IoCContainer', () => {
         }
     }
 
-    it('must automatically inject deps to the constructor', () => {
-        const ioc = new IoCContainer
-        const foo = ioc.make(Foo)
+    beforeEach(function(){
+        this.ioc = new IoCContainer
+    })
+
+    it('must automatically inject deps to the constructor', function() {
+        const foo = this.ioc.make(Foo)
         expect(foo.bar).to.be.an.instanceof(Bar)
         expect(foo.baz).to.be.an.instanceof(Baz)
     })
 
-    it('must support singletons', () => {
-        const ioc = new IoCContainer
-        ioc.singleton(Bar)
-
-        const foo1 = ioc.make(Foo)
-        const foo2 = ioc.make(Foo)
+    it('must support singletons', function() {
+        this.ioc.singleton(Bar)
+        const foo1 = this.ioc.make(Foo)
+        const foo2 = this.ioc.make(Foo)
         expect(foo1.bar).to.be.equal(foo2.bar)
     })
 
-    it('must support singletons which flagged in the meta', () => {
-        const ioc = new IoCContainer
+    it('must support singletons which flagged in the meta', function() {
         Bar.__cubekitMeta__ = { useAsSingleton: true }
 
-        const foo1 = ioc.make(Foo)
-        const foo2 = ioc.make(Foo)
+        const foo1 = this.ioc.make(Foo)
+        const foo2 = this.ioc.make(Foo)
         expect(foo1.bar).to.be.equal(foo2.bar)
 
         delete Bar.__cubekitMeta__
