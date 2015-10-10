@@ -34,5 +34,29 @@ describe('meta/MetaDecorator', () => {
 
             checkMetaTypes(Test, [Type1, Type2])
         })
+
+        it('must merge types from the parent class', function() {
+            const { meta } = this
+
+            @meta.types(Type1)
+            class ParentClass {}
+
+            @meta.types(Type2)
+            class ChildClass extends ParentClass {}
+
+            checkMetaTypes(ChildClass, [Type1, Type2])
+        })
+
+        it('must not change types in the parent class', function() {
+            const { meta } = this
+
+            @meta.types(Type1)
+            class ParentClass {}
+
+            @meta.types(Type2)
+            class ChildClass extends ParentClass {}
+
+            checkMetaTypes(ParentClass, [Type1])
+        })
     })
 })
