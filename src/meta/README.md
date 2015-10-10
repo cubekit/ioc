@@ -58,8 +58,6 @@ import AddItemToCartAction from 'app/actions/AddItemToCartAction'
 
 // ...
 
-// В момент make все зависимости были автоматически
-// инстанцированы, при том синглтоны только единожды
 const action = ioc.make(AddItemToCartAction)
 action.run()
 ```
