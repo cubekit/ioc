@@ -6,9 +6,14 @@ export default class IoCContainer {
 
     _singletons = new Map
     _instances = new Map
+    _bindings = new Map
 
     singleton(type) {
         this._singletons = this._singletons.set(type, true)
+    }
+
+    bind(originalType, replacerType) {
+        this._bindings = this._bindings.set(originalType, replacerType)
     }
 
     make(type, ...args) {
@@ -43,19 +48,28 @@ export default class IoCContainer {
     }
 
     _instantiate(type, args = []) {
-        const deps = this.makeDeps(type, args)
-        return new type(...deps)
+        const deps = this._makeDeps(type, args)
+        const binding = this._getBindingOrReturnType(type)
+        return new binding(...deps)
     }
 
-    makeDeps(type, args) {
-        const types = this.getConstructorTypes(type, args)
+    _makeDeps(type, args) {
+        const types = this._getConstructorTypes(type, args)
         const count = Math.max(types.length, args.length)
         return _.times(count, (index) => {
             return args[index] || this.make(types[index])
         })
     }
 
-    getConstructorTypes(type) {
+    _getConstructorTypes(type) {
         return _.get(type.__cubekitMeta__, 'constructor.types') || []
     }
+
+    _getBindingOrReturnType(type) {
+        if (this._bindings.has(type)) {
+            return this._bindings.get(type)
+        }
+        return type
+    }
+
 }

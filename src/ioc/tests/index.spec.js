@@ -19,7 +19,7 @@ describe('IoCContainer', function() {
         }
     }
 
-    function checkFooProps(foo) {
+    function checkBarAndBaz(foo) {
         expect(foo.bar).to.be.an.instanceof(Bar)
         expect(foo.baz).to.be.an.instanceof(Baz)
     }
@@ -29,7 +29,7 @@ describe('IoCContainer', function() {
     })
 
     it('must automatically inject deps to the constructor', function() {
-        checkFooProps(this.ioc.make(Foo))
+        checkBarAndBaz(this.ioc.make(Foo))
     })
 
     it('must support singletons', function() {
@@ -61,7 +61,7 @@ describe('IoCContainer', function() {
 
         const needsFoo = this.ioc.make(NeedsFoo)
         expect(needsFoo.foo).to.be.an.instanceof(Foo)
-        checkFooProps(needsFoo.foo)
+        checkBarAndBaz(needsFoo.foo)
     })
 
     it('must accept additional arguments', function() {
@@ -86,4 +86,13 @@ describe('IoCContainer', function() {
         const foo = this.ioc.make(Foo, undefined, baz)
         expect(foo.baz).to.equal(baz)
     })
+
+    it('must allow to bind some another type to the given type', function() {
+        class BarReplacement {}
+        this.ioc.bind(Bar, BarReplacement)
+        const foo = this.ioc.make(Foo)
+        expect(foo.bar).to.be.an.instanceof(BarReplacement)
+    })
+
+
 })
