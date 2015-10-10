@@ -12,6 +12,11 @@ export default class IoCContainer {
         this._singletons = this._singletons.set(type, true)
     }
 
+    instance(type, instance) {
+        this.singleton(type)
+        this._setInstance(type, instance)
+    }
+
     bind(originalType, replacerType) {
         this._bindings = this._bindings.set(originalType, replacerType)
     }
@@ -42,7 +47,7 @@ export default class IoCContainer {
 
     _getSingleton(type) {
         if (!this._instances.has(type)) {
-            this._instances = this._instances.set(type, this._instantiate(type))
+            this._setInstance(type, this._instantiate(type))
         }
         return this._instances.get(type)
     }
@@ -72,4 +77,7 @@ export default class IoCContainer {
         return type
     }
 
+    _setInstance(type, instance) {
+        this._instances = this._instances.set(type, instance)
+    }
 }

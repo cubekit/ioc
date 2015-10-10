@@ -94,5 +94,10 @@ describe('IoCContainer', function() {
         expect(foo.bar).to.be.an.instanceof(BarReplacement)
     })
 
-
+    it('must allow to bind some another type to the given type', function() {
+        const originalInstance = new Bar
+        this.ioc.instance(Bar, originalInstance)
+        const barInstance = this.ioc.make(Bar)
+        expect(barInstance).to.be.equal(originalInstance)
+    })
 })
