@@ -1,8 +1,8 @@
-import IoCContainer from 'ioc/'
+import IoCContainer from 'ioc/Container'
 import { mustBeInstantiable } from 'test-utils/'
 
 
-describe('IoCContainer', function() {
+describe('ioc/Container', function() {
 
     mustBeInstantiable(IoCContainer)
 
