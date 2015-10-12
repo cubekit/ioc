@@ -1,7 +1,7 @@
-.DS_STORE
-*.log
 node_modules
-
+*.log
+.DS_Store
+dist
+lib
+coverage
 .idea
-dist/**
-!dist/images

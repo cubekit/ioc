@@ -1,10 +1,7 @@
-import IoCContainer from 'ioc/Container'
-import { mustBeInstantiable } from 'test-utils/'
+import IoCContainer from 'Container'
 
 
 describe('ioc/Container', function() {
-
-    mustBeInstantiable(IoCContainer)
 
     class Bar {}
     class Baz {}
@@ -24,7 +21,7 @@ describe('ioc/Container', function() {
         expect(foo.baz).to.be.an.instanceof(Baz)
     }
 
-    beforeEach(function(){
+    beforeEach(function() {
         this.ioc = new IoCContainer
     })
 
@@ -72,7 +69,7 @@ describe('ioc/Container', function() {
         }
 
         const instance = this.ioc.make(Class, 1, 2, 3)
-        expect(instance.args).to.eql([1,2,3])
+        expect(instance.args).to.eql([1, 2, 3])
     })
 
     it('must not resolve dependency if it was passed as argument', function() {
@@ -83,7 +80,7 @@ describe('ioc/Container', function() {
 
     it('must allow to partially pass deps as arguments', function() {
         const baz = new Baz
-        const foo = this.ioc.make(Foo, undefined, baz)
+        const foo = this.ioc.make(Foo, null, baz)
         expect(foo.baz).to.equal(baz)
     })
 
@@ -94,7 +91,7 @@ describe('ioc/Container', function() {
         expect(foo.bar).to.be.an.instanceof(BarReplacement)
     })
 
-    it('must allow to bind some another type to the given type', function() {
+    it('must set define a singleton and immediately set its instance', function() {
         const originalInstance = new Bar
         this.ioc.instance(Bar, originalInstance)
         const barInstance = this.ioc.make(Bar)
