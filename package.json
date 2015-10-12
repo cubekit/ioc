@@ -1,6 +1,6 @@
 {
   "name": "cubekit-ioc",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Cubekit IoC Container",
   "main": "lib/index.js",
   "scripts": {
