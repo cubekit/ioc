@@ -69,7 +69,7 @@ export default class Container {
     }
 
     _getConstructorTypes(Type) {
-        return _.get(Type.__cubekitMeta__, 'constructor.Types') || []
+        return _.get(Type.__cubekitMeta__, 'constructor.types') || []
     }
 
     _getBindingOrReturnType(Type) {
