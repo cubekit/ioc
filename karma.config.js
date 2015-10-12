@@ -34,7 +34,7 @@ module.exports = function (config) {
             module: {
                 preLoaders: [{
                     test: /\.(js|jsx)$/,
-                    exclude: /(node_modules)/,
+                    include: /ioc\/(src|tests)/,
                     loader: 'eslint-loader',
                 }, {
                     test: /\.js$/,
