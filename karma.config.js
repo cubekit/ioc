@@ -14,39 +14,39 @@ module.exports = function (config) {
             'karma-chrome-launcher',
             'karma-coverage',
             'karma-spec-reporter',
+            'karma-sourcemap-loader',
         ],
         browsers: ['Chrome'],
         preprocessors: {
-            'karma.entry.js' : ['webpack'],
-            'src/**/*.js': ['webpack'],
-            'tests/**/*.js': ['webpack'],
+            'karma.entry.js' : ['webpack', 'sourcemap'],
         },
         reporters: ['coverage', 'spec'],
         coverageReporter: {
             reporters: [
                 { type: 'text' },
-            ]
+            ],
+            instrumenterOptions: {
+                istanbul: { noCompact: true }
+            }
         },
         webpack: {
             devtool: 'inline-source-map',
             module: {
-                //preLoaders: [{
-                //    test: /\.(js|jsx)$/,
-                //    exclude: /(node_modules)/,
-                //    loader: 'eslint-loader',
-                //}],
-
-                loaders: [{
-                    test: /\.(js|jsx)?$/,
+                preLoaders: [{
+                    test: /\.(js|jsx)$/,
                     exclude: /(node_modules)/,
-                    loader: 'babel-loader',
+                    loader: 'eslint-loader',
+                }, {
+                    test: /\.js$/,
+                    include: /src/,
+                    loader: 'isparta',
                 }],
 
-                postLoaders: [{
-                    test: /.(js|jsx)$/,
-                    exclude: /(node_modules|tests)/,
-                    loader: 'istanbul-instrumenter',
-                }]
+                loaders: [{
+                    test: /\.js$/,
+                    exclude: /(node_modules)/,
+                    loader: 'babel',
+                }],
             },
             resolve: {
                 extensions: ["", ".js"],
