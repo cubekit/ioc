@@ -11,6 +11,10 @@ class Storage {}
 class Config {}
 class Fetcher {}
 
+// This decorator does not replaces the class, just adds
+// a flag to the __cubekitMeta__ static property, so you
+// are able to test it without problems.
+@meta.singleton()
 class Es6Fetcher {
   fetch(...args) {
     return fetch(...args)
@@ -30,7 +34,7 @@ class Api {
   request(path, body) {
     const url = `${this.config.baseUrl}/${path}`
     const sessionKey = this.storage.getItem('sessionKey')
-    return this.fetch.fetch(url, {
+    return this.fetcher.fetch(url, {
       body,
       headers: { 'X-Session': sessionKey },
     })
