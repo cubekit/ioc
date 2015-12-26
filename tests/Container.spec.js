@@ -25,6 +25,11 @@ describe('ioc/Container', function() {
         this.ioc = new IoCContainer
     })
 
+    it('must register itself as instance', function() {
+        const ioc = this.ioc.make(IoCContainer)
+        expect(ioc).to.be.equal(this.ioc)
+    })
+
     it('must automatically inject deps to the constructor', function() {
         checkBarAndBaz(this.ioc.make(Foo))
     })

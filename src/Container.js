@@ -8,6 +8,10 @@ export default class Container {
     _instances = new Map
     _bindings = new Map
 
+    constructor() {
+        this.instance(Container, this)
+    }
+
     singleton(Type) {
         this._singletons = this._singletons.set(Type, true)
     }
