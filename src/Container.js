@@ -57,8 +57,8 @@ export default class Container {
     }
 
     _instantiate(Type, args = []) {
-        const deps = this._makeDeps(Type, args)
         const Binding = this._getBindingOrReturnType(Type)
+        const deps = this._makeDeps(Binding, args)
 
         return new Binding(...deps)
     }

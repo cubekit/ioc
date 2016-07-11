@@ -96,6 +96,22 @@ describe('ioc/Container', function() {
         expect(foo.bar).to.be.an.instanceof(BarReplacement)
     })
 
+    it('must get `deps` from the binded type', function() {
+        class BarReplacement {
+            static __cubekitMeta__ = {
+                constructor: { types: [Baz] }
+            }
+
+            constructor(baz) {
+                this.baz = baz
+            }
+        }
+
+        this.ioc.bind(Bar, BarReplacement)
+        const bar = this.ioc.make(Bar)
+        expect(bar.baz).to.be.an.instanceof(Baz)
+    })
+
     it('must set define a singleton and immediately set its instance', function() {
         const originalInstance = new Bar
         this.ioc.instance(Bar, originalInstance)
