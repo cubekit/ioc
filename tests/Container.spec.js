@@ -118,4 +118,40 @@ describe('ioc/Container', function() {
         const barInstance = this.ioc.make(Bar)
         expect(barInstance).to.be.equal(originalInstance)
     })
+
+    describe('#fork', function() {
+        /**
+         * `#fork` returns a copy of the container. Any classes
+         * registered in the fork will not affect the original
+         * container.
+         */
+
+        it('must not affect the original container', function() {
+            const fork = this.ioc.fork()
+            fork.instance(Foo, {})
+            expect(this.ioc.make(Foo)).to.not.equal(fork.make(Foo))
+        })
+
+        it('must inherit instances from the original container', function() {
+            this.ioc.instance(Foo, {})
+            const fork = this.ioc.fork()
+            expect(this.ioc.make(Foo)).to.equal(fork.make(Foo))
+        })
+
+        it('must share singletons defined in the ' +
+            'original container before the forking', function() {
+
+            this.ioc.singleton(Foo)
+            const fork = this.ioc.fork()
+            expect(fork.make(Foo)).to.equal(this.ioc.make(Foo))
+        })
+
+        it('must not share singletons defined in the ' +
+            'original container after the forking', function() {
+
+            const fork = this.ioc.fork()
+            this.ioc.singleton(Foo)
+            expect(fork.make(Foo)).to.not.equal(this.ioc.make(Foo))
+        })
+    })
 })
