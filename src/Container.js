@@ -7,6 +7,8 @@ export default class Container {
     _singletons = new Map
     _instances = new Map
     _bindings = new Map
+    _resolvers = new Map
+    _fakeFunctionCreator = null
 
     constructor(params = {}) {
         this.instance(Container, this)
@@ -14,6 +16,10 @@ export default class Container {
         if (params.parent) {
             this._setParent(params.parent)
         }
+    }
+
+    setFakeFunctionCreator(createFakeFunction) {
+        this._fakeFunctionCreator = createFakeFunction
     }
 
     /**
@@ -46,8 +52,12 @@ export default class Container {
         return new Container({ parent: this })
     }
 
-    singleton(Type) {
+    singleton(Type, resolver = null) {
         this._singletons = this._singletons.set(Type, true)
+
+        if (resolver) {
+            this.bind(Type, resolver)
+        }
     }
 
     instance(Type, instance) {
@@ -59,7 +69,25 @@ export default class Container {
         this._bindings = this._bindings.set(originalType, replacerType)
     }
 
-    make(Type, ...args) {
+    resolver(Type, resolver) {
+        this._resolvers = this._resolvers.set(Type, resolver)
+    }
+
+    resolve(Type, ...args) {
+        if (this._resolvers.has(Type)) {
+            return this._resolvers.get(Type)(...args)
+        }
+
+        if (_.isString(Type)) {
+            if (!this._bindings.has(Type) && !this._instances.has(Type)) {
+                throw new Error(
+                    `You are trying to instantiate a "${Type}" but ` +
+                    'it doesn\'t exist. Make sure that you\'ve registered ' +
+                    'it in and check the name for typos.'
+                )
+            }
+        }
+
         this._registerAsSingletonIfFlagged(Type)
 
         if (this._isInheritedSingleton(Type)) {
@@ -71,6 +99,30 @@ export default class Container {
         }
 
         return this._instantiate(Type, args)
+    }
+
+    fake(Type) {
+        const methods = {}
+        const createFakeFunction = this._fakeFunctionCreator
+
+        const mock = new Proxy({}, {
+            get: function(target, key) {
+                if (!methods[key]) {
+                    methods[key] = createFakeFunction()
+                }
+
+                return methods[key]
+            },
+        })
+
+        this.resolver(Type, () => mock)
+    }
+
+    /**
+     * @deprecated Use {@link Container#resolve} instead
+     */
+    make(...args) {
+        return this.resolve(...args)
     }
 
     getSingletons() {
