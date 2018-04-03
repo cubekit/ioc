@@ -8,6 +8,8 @@ export default class Container {
     _instances = new Map
     _bindings = new Map
     _resolvers = new Map
+    _decorators = new Map
+    _hooks = new Map
     _fakeFunctionCreator = null
 
     constructor(params = {}) {
@@ -73,6 +75,36 @@ export default class Container {
         this._resolvers = this._resolvers.set(Type, resolver)
     }
 
+    decorator(Type, decorate) {
+        if (this._resolvers.has(Type)) {
+            throw new Error(
+                `You are trying to decorate resolver "${Type}" but it's not supported.` +
+                'You can decorate only bindings and singletons.'
+            )
+        }
+
+        if (this._isSingleton(Type) && this._instances.has(Type)) {
+            throw new Error(
+                `You are trying to decorate an already instantiated singleton "${Type}".` +
+                'This operation has no sense, probably something went wrong.'
+            )
+        }
+
+        if (!this._decorators.has(Type)) {
+            this._decorators = this._decorators.set(Type, [])
+        }
+
+        this._decorators.get(Type).push(decorate)
+    }
+
+    hook(Type, callback) {
+        if (!this._hooks.has(Type)) {
+            this._hooks = this._hooks.set(Type, [])
+        }
+
+        this._hooks.get(Type).push(callback)
+    }
+
     resolve(Type, ...args) {
         if (this._resolvers.has(Type)) {
             return this._resolvers.get(Type)(...args)
@@ -99,6 +131,10 @@ export default class Container {
         }
 
         return this._instantiate(Type, args)
+    }
+
+    walk(name, registry) {
+        return this._hooks.get(name, []).reduce((registry, callback) => callback(registry), registry)
     }
 
     fake(Type) {
@@ -189,9 +225,10 @@ export default class Container {
      */
     _instantiate(Type, args = []) {
         const Binding = this._getBindingOrReturnType(Type)
-        const deps = this._makeDeps(Binding, args)
+        const Decorated = this._decorate(Binding, Type)
+        const deps = this._makeDeps(Decorated, args)
 
-        return new Binding(...deps)
+        return new Decorated(...deps)
     }
 
     /**
@@ -228,6 +265,16 @@ export default class Container {
             return this._bindings.get(Type)
         }
         return Type
+    }
+
+    _decorate(Binding, Type) {
+        if (this._decorators.has(Type)) {
+            return this._decorators.get(Type).reduce((Binding, decorate) => {
+                return decorate(Binding)
+            }, Binding)
+        }
+
+        return Binding
     }
 
     /**

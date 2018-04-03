@@ -215,4 +215,122 @@ describe('ioc/Container', function() {
             expect(result1 == result2).to.be.ok
         })
     })
+
+    describe('Hooks', function() {
+        it('provides an extension point that can be resolved later', function() {
+            this.ioc.hook('namespace/extensions', (extensions) => {
+                return { ...extensions, foo: 'foo' }
+            })
+
+            this.ioc.hook('namespace/extensions', (extensions) => {
+                return { ...extensions, bar: 'bar' }
+            })
+
+            this.ioc.hook('namespace/extensions', (extensions) => {
+                return { ...extensions, baz: 'baz' }
+            })
+
+            const result = this.ioc.walk('namespace/extensions', {})
+
+            expect(result).to.eql({
+                foo: 'foo',
+                bar: 'bar',
+                baz: 'baz',
+            })
+        })
+
+        it('just returns the registry if no hooks have been registered', function() {
+            const registry = {}
+
+            const result = this.ioc.walk('namespace/extensions', registry)
+
+            expect(result == registry).to.be.ok
+        })
+    })
+
+    describe('Decorators', function() {
+        it('allows to decorate a bound class', function() {
+            this.ioc.bind('Greeter', class {
+                constructor() { this.name = 'John' }
+                sayHello() { return `Hello, ${this.name}` }
+            })
+
+            this.ioc.decorator('Greeter', (Greeter) => {
+                return class extends Greeter {
+                    sayBye() { return `Bye, ${this.name}` }
+                }
+            })
+
+            this.ioc.decorator('Greeter', (Greeter) => {
+                return class extends Greeter {
+                    sayWhat() { return 'What?' }
+                }
+            })
+
+            const greeter = this.ioc.resolve('Greeter')
+
+            expect(greeter.sayHello()).to.eql('Hello, John')
+            expect(greeter.sayBye()).to.eql('Bye, John')
+            expect(greeter.sayWhat()).to.eql('What?')
+        })
+
+        it('allows to decorate a singleton', function() {
+            this.ioc.singleton('Greeter', class {
+              constructor() { this.name = 'John' }
+              sayHello() { return `Hello, ${this.name}` }
+            })
+
+            this.ioc.decorator('Greeter', (Greeter) => {
+                return class extends Greeter {
+                    sayBye() { return `Bye, ${this.name}` }
+                }
+            })
+
+            this.ioc.decorator('Greeter', (Greeter) => {
+                return class extends Greeter {
+                    sayWhat() { return 'What?' }
+                }
+            })
+
+            const greeter = this.ioc.resolve('Greeter')
+
+            expect(greeter.sayHello()).to.eql('Hello, John')
+            expect(greeter.sayBye()).to.eql('Bye, John')
+            expect(greeter.sayWhat()).to.eql('What?')
+        })
+
+        it('allows to return completely different class', function() {
+            this.ioc.singleton('Greeter', class {
+                sayHello() { return 'Hello' }
+            })
+
+            this.ioc.decorator('Greeter', () => {
+                return class {
+                    sayBye() { return 'Bye' }
+                }
+            })
+
+            const greeter = this.ioc.resolve('Greeter')
+
+            expect(greeter).to.have.property('sayBye')
+            expect(greeter).not.to.have.property('sayHello')
+        })
+
+        it('throws if I try to decorate an instantiated singleton', function() {
+            this.ioc.singleton('Foo', class {})
+            this.ioc.resolve('Foo')
+
+            const decorate = () => this.ioc.decorator('Foo', () => {})
+
+            expect(decorate).to.throw(/instantiated/)
+        })
+
+        it('throws if I try to decorate a resolver', function() {
+            this.ioc.resolver('foo', () => 'foo')
+
+            const decorate = () => this.ioc.decorator('foo', () => {})
+
+            expect(decorate).to.throw(/resolver/)
+        })
+    })
 })
