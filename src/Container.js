@@ -63,11 +63,13 @@ export default class Container {
   }
 
   instance(Type, instance) {
+    this._validateType(Type)
     this.singleton(Type)
     this._setInstance(Type, instance)
   }
 
   bind(originalType, replacerType) {
+    this._validateType(originalType)
     this._bindings = this._bindings.set(originalType, replacerType)
   }
 
@@ -82,6 +84,8 @@ export default class Container {
         'You can decorate only bindings and singletons.'
       )
     }
+
+    this._validateType(Type)
 
     if (this._isSingleton(Type) && this._instances.has(Type)) {
       throw new Error(
@@ -119,6 +123,8 @@ export default class Container {
         )
       }
     }
+
+    this._validateType(Type)
 
     this._registerAsSingletonIfFlagged(Type)
 
@@ -225,9 +231,10 @@ export default class Container {
    */
   _instantiate(Type, args = []) {
     const Binding = this._getBindingOrReturnType(Type)
+    // this._validateBinding(Binding)
+
     const Decorated = this._decorate(Binding, Type)
     const deps = this._makeDeps(Decorated, args)
-
     return new Decorated(...deps)
   }
 
@@ -288,5 +295,15 @@ export default class Container {
    */
   _setInstance(Type, instance) {
     this._instances = this._instances.set(Type, instance)
+  }
+
+  _validateType(Type) {
+    const typeOf = typeof Type
+
+    if (typeOf !== 'string' && typeOf !== 'function') {
+      throw new Error(
+        `Either 'string' or 'function' must be used as type, but you passed ${Type}`
+      )
+    }
   }
 }

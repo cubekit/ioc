@@ -80,7 +80,7 @@ describe('ioc/Container', function () {
     expect(instance.args).to.eql([1, 2, 3])
   })
 
-  describe('Overriding Dependencies', () => {
+  describe('Overriding Dependencies', function() {
     it('must not resolve dependency if it was passed as argument', function () {
       const bar = new Bar
       const foo = this.ioc.resolve(Foo, bar)
@@ -106,39 +106,40 @@ describe('ioc/Container', function () {
       const foo = this.ioc.resolve(Foo, '')
       expect(foo.bar).to.eql('')
     })
+
+    it('must not try to resolve dependency if it is overridden with `null`', function () {
+      const foo = this.ioc.resolve(Foo, null)
+      expect(foo.bar).to.eql(null)
+    })
   })
 
-  it('must allow to partially pass deps as arguments', function () {
-    const baz = new Baz
-    const foo = this.ioc.resolve(Foo, null, baz)
-    expect(foo.baz).to.equal(baz)
-  })
+  describe('Binding', function() {
+    it('must allow to bind some another type to the given type', function () {
+      class BarReplacement {}
 
-  it('must allow to bind some another type to the given type', function () {
-    class BarReplacement {}
+      this.ioc.bind(Bar, BarReplacement)
+      const foo = this.ioc.resolve(Foo)
+      expect(foo.bar).to.be.an.instanceof(BarReplacement)
+    })
 
-    this.ioc.bind(Bar, BarReplacement)
-    const foo = this.ioc.resolve(Foo)
-    expect(foo.bar).to.be.an.instanceof(BarReplacement)
-  })
+    it('must get `deps` from the binded type', function () {
+      class BarReplacement {
+        static __cubekitMeta__ = {
+          constructor: { types: [Baz] }
+        }
 
-  it('must get `deps` from the binded type', function () {
-    class BarReplacement {
-      static __cubekitMeta__ = {
-        constructor: { types: [Baz] }
+        constructor(baz) {
+          this.baz = baz
+        }
       }
 
-      constructor(baz) {
-        this.baz = baz
-      }
-    }
-
-    this.ioc.bind(Bar, BarReplacement)
-    const bar = this.ioc.resolve(Bar)
-    expect(bar.baz).to.be.an.instanceof(Baz)
+      this.ioc.bind(Bar, BarReplacement)
+      const bar = this.ioc.resolve(Bar)
+      expect(bar.baz).to.be.an.instanceof(Baz)
+    })
   })
 
-  it('must set define a singleton and immediately set its instance', function () {
+  it('must define a singleton and immediately set its instance', function () {
     const originalInstance = new Bar
     this.ioc.instance(Bar, originalInstance)
     const barInstance = this.ioc.resolve(Bar)
@@ -379,6 +380,33 @@ describe('ioc/Container', function () {
       const decorate = () => this.ioc.decorator('foo', () => {})
 
       expect(decorate).to.throw(/resolver/)
+    })
+  })
+
+  describe('Errors Handling', () => {
+    it('#resolve() throws a meaningful error if an unsupported type is used', function() {
+      const bind = () => this.ioc.resolve({})
+      expect(bind).to.throw(/type/)
+    })
+
+    it('#singleton() throws a meaningful error if an unsupported type is used', function() {
+      const bind = () => this.ioc.singleton({}, class {})
+      expect(bind).to.throw(/type/)
+    })
+
+    it('#istance() throws a meaningful error if an unsupported type is used', function() {
+      const bind = () => this.ioc.instance({}, {})
+      expect(bind).to.throw(/type/)
+    })
+
+    it('#decorate() throws a meaningful error if an unsupported type is used', function() {
+      const bind = () => this.ioc.decorator({}, () => {})
+      expect(bind).to.throw(/type/)
+    })
+
+    it('#bind() throws a meaningful error if an unsupported type is used', function() {
+      const bind = () => this.ioc.bind({}, class {})
+      expect(bind).to.throw(/type/)
     })
   })
 })
