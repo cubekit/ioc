@@ -242,7 +242,11 @@ export default class Container {
     const count = Math.max(Types.length, args.length)
 
     return _.times(count, (index) => {
-      return args[index] || this.make(Types[index])
+      if (index < args.length) {
+        return args[index]
+      }
+
+      return this.resolve(Types[index])
     })
   }
 

@@ -80,10 +80,32 @@ describe('ioc/Container', function () {
     expect(instance.args).to.eql([1, 2, 3])
   })
 
-  it('must not resolve dependency if it was passed as argument', function () {
-    const bar = new Bar
-    const foo = this.ioc.resolve(Foo, bar)
-    expect(foo.bar).to.equal(bar)
+  describe('Overriding Dependencies', () => {
+    it('must not resolve dependency if it was passed as argument', function () {
+      const bar = new Bar
+      const foo = this.ioc.resolve(Foo, bar)
+      expect(foo.bar).to.equal(bar)
+    })
+
+    it('must not try to resolve dependency if it is overridden with `undefined`', function () {
+      const foo = this.ioc.resolve(Foo, undefined)
+      expect(foo.bar).to.eql(undefined)
+    })
+
+    it('must not try to resolve dependency if it is overridden with `false`', function () {
+      const foo = this.ioc.resolve(Foo, false)
+      expect(foo.bar).to.eql(false)
+    })
+
+    it('must not try to resolve dependency if it is overridden with `0`', function () {
+      const foo = this.ioc.resolve(Foo, 0)
+      expect(foo.bar).to.eql(0)
+    })
+
+    it('must not try to resolve dependency if it is overridden with `""`', function () {
+      const foo = this.ioc.resolve(Foo, '')
+      expect(foo.bar).to.eql('')
+    })
   })
 
   it('must allow to partially pass deps as arguments', function () {
