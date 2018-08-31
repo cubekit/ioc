@@ -65,6 +65,6 @@ ioc.instance(Config, {
 })
 
 // Instantiate CartApiUtils. All deps will be recursively resolved by the ioc
-const cartUtils = ioc.make(CartApiUtils)
+const cartUtils = ioc.resolve(CartApiUtils)
 cartUtils.addItem({ name: 'apple', qty: 1 })
 ```
